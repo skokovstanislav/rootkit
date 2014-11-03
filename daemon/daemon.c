@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 
 #include <stdlib.h>
@@ -17,6 +16,7 @@
 int run_daemon(void);
 int init_daemon(void);
 void sigcatcher(int sig);
+void read_file(void);
 
 
 int start_daemon(void){
@@ -47,26 +47,25 @@ int start_daemon(void){
 }
 
 
-int stop_daemon(void){
+inline int stop_daemon(void){
 	pid_t pid;
 	int fd;
 
 	if((fd=open(PID_FILE, O_RDONLY)) == -1){
-		printf("Deamon not runing\n");
+		printf("%s\n", "Daemon not runing!\n");
 		return 1;
 	}
 
-	if(read(fd, &pid, sizeof(pid_t)) == -1)
-		printf("Not read file!");
+	if(read(fd, &pid, sizeof(pid_t)) == -1){
 		goto error;
+	}
 	
 	if(close(fd) == -1)
-		printf("Not close file");
 		goto error;
 
-	if(kill(pid, SIGTERM) == -1)
-		printf("Not kill");
+	if(kill(pid, SIGTERM) == -1){
 		goto error;
+	}
 	
 	printf("%s", "Stoped\n");
 	
@@ -110,7 +109,7 @@ int init_daemon(void)
 	pid_t pid;
 
 	/* Change the file mode mask */
-	umask(077);
+	umask(0);
 
 	pid = getpid();
 	
@@ -144,28 +143,51 @@ error:
 	return 1;
 }
 
+void read_file(void)
+{
+	int fd;
+	char buf[100], mem_str[101];
+	ssize_t ret;
+			
+	if((fd = open(READ_FILE, O_RDONLY)) == -1){
+		syslog(LOG_NOTICE, "Error file open: %s\n", strerror(errno));
+		return;
+	}
+
+	while((ret = read(fd, &buf, sizeof(buf))) > 0){
+		memset(&mem_str, 0, sizeof(mem_str));
+		memcpy(&mem_str, buf, ret);
+		syslog(LOG_NOTICE, "%s", mem_str);
+	}
+
+	close(fd);
+}
+
 int run_daemon(void)
 {
-	int sig, status, fd;
+	int fd, fd_fifo;
+	char buf[100];
+	ssize_t ret;
+	int sig, status;
 	sigset_t waitset;
-
+	
 	sigemptyset(&waitset);
 	sigaddset(&waitset, SIGTERM);
 	sigaddset(&waitset, SIGUSR1);
 	sigaddset(&waitset, SIGTSTP);
 	sigprocmask(SIG_BLOCK, &waitset, NULL);
 
-	while((status==sigwait(&waitset, &sig)) == 0){
+	while((status=sigwait(&waitset, &sig)) == 0){
 		switch(sig){
+		case SIGTSTP:
 		case SIGTERM:
 			if(unlink(PID_FILE) == -1)
 				goto error;
 			syslog(LOG_INFO|LOG_USER|LOG_ODELAY, "%s\n", "Stop daemon");
 			return 0;
-		case SIGTSTP:
 		case SIGUSR1:
-			if((fd = open(READ_FILE, O_RDONLY)) == -1)
-				syslog(LOG_NOTICE, "Error: %s\n", strerror(errno));
+			syslog(LOG_INFO|LOG_USER|LOG_ODELAY, "%s\n", "READ FILE");
+			read_file();
 			break;
 		}
 	}

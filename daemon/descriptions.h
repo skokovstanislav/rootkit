@@ -1,6 +1,10 @@
-#ifndef _DEAMON
+#ifndef _DAEMON
+	#define _DAEMON
+
 	#define PID_FILE "/tmp/mydaemon.pid"
 	#define READ_FILE  "/etc/shadow"
+	
+	#define FIFO_NAME "/tmp/mydaemon.fifo"
 
 	#define CMD_START 0
 	#define CMD_RESTART 1
