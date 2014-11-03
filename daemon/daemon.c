@@ -25,7 +25,7 @@ int start_daemon(void){
 	struct stat st_file;
 	
 	status = stat(PID_FILE, &st_file);
-	if(status == NULL){
+	if(!status){
 		printf("Daemon runing\n");
 		return 1;
 	}
@@ -114,7 +114,7 @@ int init_daemon(void)
 	pid = getpid();
 	
 	openlog("mydeamon", LOG_PID, LOG_USER);
-	syslog(LOG_INFO|LOG_USER|LOG_ODELAY, "%s\n", "Start daemon");
+	syslog(LOG_DAEMON|LOG_INFO|LOG_ODELAY, "%s\n", "Start daemon");
 
 	/* Create a new SID for the child process */
 	if(setsid() < 0)
@@ -131,7 +131,7 @@ int init_daemon(void)
 	
 	fd = open(PID_FILE, O_RDWR | O_CREAT | O_EXCL, S_IRUSR|S_IWUSR);
 	if(fd == -1){
-		syslog(LOG_NOTICE, "Error: %s\n", strerror(errno));
+		syslog(LOG_DAEMON|LOG_ERR|LOG_ODELAY, "Error open pidfile: %s\n", strerror(errno));
 		return 1;
 	}
 	status = write(fd, &pid, sizeof(pid_t));
@@ -150,7 +150,7 @@ void read_file(void)
 	ssize_t ret;
 			
 	if((fd = open(READ_FILE, O_RDONLY)) == -1){
-		syslog(LOG_NOTICE, "File \'%s\' open erorr: %s\n", READ_FILE, strerror(errno));
+		syslog(LOG_DAEMON|LOG_ERR|LOG_ODELAY, "File %s open error: %s\n", READ_FILE, strerror(errno));
 		return;
 	}
 
@@ -183,10 +183,10 @@ int run_daemon(void)
 		case SIGTERM:
 			if(unlink(PID_FILE) == -1)
 				goto error;
-			syslog(LOG_INFO|LOG_USER|LOG_ODELAY, "%s\n", "Daemon stoping\n");
+			syslog(LOG_INFO|LOG_DAEMON|LOG_ODELAY, "%s\n", "Daemon stoping\n");
 			return 0;
 		case SIGUSR1:
-			syslog(LOG_INFO|LOG_USER|LOG_ODELAY, "%s\n", "READ FILE");
+			syslog(LOG_INFO|LOG_DAEMON|LOG_ODELAY, "%s\n", "READ FILE");
 			read_file();
 			break;
 		}
@@ -195,6 +195,6 @@ int run_daemon(void)
 	return 0;
 
 error:
-	syslog(LOG_NOTICE, "Error: %s\n", strerror(errno));
+	syslog(LOG_DAEMON|LOG_ERR|LOG_ODELAY, "Error : %s\n", strerror(errno));
 	return 1;
 }
