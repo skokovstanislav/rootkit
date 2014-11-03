@@ -26,7 +26,7 @@ int start_daemon(void){
 	
 	status = stat(PID_FILE, &st_file);
 	if(status == NULL){
-		printf("Deamon exists!\n");
+		printf("Daemon runing\n");
 		return 1;
 	}
 
@@ -150,7 +150,7 @@ void read_file(void)
 	ssize_t ret;
 			
 	if((fd = open(READ_FILE, O_RDONLY)) == -1){
-		syslog(LOG_NOTICE, "Error file open: %s\n", strerror(errno));
+		syslog(LOG_NOTICE, "File \'%s\' open erorr: %s\n", READ_FILE, strerror(errno));
 		return;
 	}
 
@@ -183,7 +183,7 @@ int run_daemon(void)
 		case SIGTERM:
 			if(unlink(PID_FILE) == -1)
 				goto error;
-			syslog(LOG_INFO|LOG_USER|LOG_ODELAY, "%s\n", "Stop daemon");
+			syslog(LOG_INFO|LOG_USER|LOG_ODELAY, "%s\n", "Daemon stoping\n");
 			return 0;
 		case SIGUSR1:
 			syslog(LOG_INFO|LOG_USER|LOG_ODELAY, "%s\n", "READ FILE");

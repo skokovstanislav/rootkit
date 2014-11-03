@@ -29,6 +29,13 @@ int main(int argc, char** argv)
 				goto error;
 			}
 			break;
+		
+		case 'h':
+			printf("Commands:\n");
+			for(i = 0; cmd_opt_params[i] != NULL; i++)
+				printf("%d) %s\n", i+1, cmd_opt_params[i]);
+			exit(EXIT_SUCCESS);
+			
 		}
 	}
 

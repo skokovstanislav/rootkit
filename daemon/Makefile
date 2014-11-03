@@ -1,12 +1,19 @@
+PROG_NAME = mydaemon
 
-all: main
+srcfiles = $(wildcard *.c)
+objects = $(srcfiles:%.c=%.o)
 
-main: main.o daemon.o
-	gcc main.o daemon.o -o mydaemon
+CFLAGS = -O2
+CC = gcc
 
-main.o:
-	gcc -c main.c
+.SUFFIXES: .c .o
 
-daemon.o:
-	gcc -c daemon.c
+.c.o:
+	gcc -c $< -o $@
 
+mydaemon: $(objects)
+	$(CC) $(CFLAGS) $(objects) -o $(PROG_NAME)
+
+.PHONY: clean
+clean:
+	-rm $(objects)
