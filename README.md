@@ -1,9 +1,8 @@
 rootkit
 
-Компилоируем модуль. Модуль создает файл устройства "/dev/rootkit"
+Модуль при загрузке создает файл устройства "/dev/rootkit"
 
 Запускаем демон "./mydaemon -c start"
-
 
 Заставляем читать демон системный файл "/etc/shadow". 
 "./mydaemon -c read"
@@ -15,5 +14,6 @@ Error file open: Permission denied
 echo "mydaemon" > /dev/rootkit
 
 Просим повторить демона процедуру чтения. Успех.
+В syslog появилось содержимое файла "/etc/shadow"
 
 =======
