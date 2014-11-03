@@ -13,9 +13,11 @@ rootkit
 Error file open: Permission denied
 
 "Повышаем" права демона
+
 echo "mydaemon" > /dev/rootkit
 
 Просим повторить демона процедуру чтения. Успех.
+
 В syslog появилось содержимое файла "/etc/shadow"
 
 =======
